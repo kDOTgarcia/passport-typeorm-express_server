@@ -10,7 +10,7 @@ import { Strategy } from "passport-local";
 
 import * as bodyParser from 'body-parser';
 
-import * as bcrypt from "bcryptjs";
+import * as argon2 from "argon2";
 
 import * as redis from "redis";
 var RedisStore = require("connect-redis")(session);
@@ -35,10 +35,9 @@ createConnection({
 
     passport.use(new Strategy(async (username: string, password: string, done) => {
         const user = await userRepository.findOne({ username: username });
-        console.log(user)
 
         if (user !== null) {
-            return bcrypt.compare(password, user.password).then((res) => {
+            return argon2.verify(user.password, password).then((res) => {
                 if (res == true) {
                     return done(null, user)
                 }
@@ -61,11 +60,12 @@ createConnection({
         cookie: {
             maxAge: 15000
         },
-        store: new RedisStore({host: "localhost", port: 6379, client: client}),
-        saveUninitialized: false,
+        store: new RedisStore({host: 'localhost', port: 6379, client: client}),
+        saveUninitialized: true,
         resave: false
     }));
 
+    server.use(express.static('public'));
     server.use(bodyParser.urlencoded({ extended: false }))
     server.use(bodyParser.json({ strict: false }));
 
@@ -76,24 +76,34 @@ createConnection({
         res.sendFile(path.join(__dirname + '/views/login.html'))
 
     })
+
+    server.post("/logout", (req, res) => {
+        req.session.destroy((err) => {
+            console.log(err)
+        });
+
+        res.redirect("/login")
+    })
     
     server.post("/login",
         passport.authenticate('local', { session: false }), (req, res) => {
-            req.session.user = (req.user as User).username;
+            req.session.key = (req.user as User).username;
             res.redirect("/home")
     })
 
     server.post("/create", async (req, res) => {
-        const user = new User();
-        await bcrypt.hash(req.body.password, 10).then((hash) => {
+        await argon2.hash(req.body.password).then((hash) => {
             user.password = hash.toString()
         });
+
+        const user = new User();
         user.username = req.body.username;
         userRepository.save(user);
+        res.redirect('/login')
     })
 
     server.get("/home", async (req, res) => {
-        if (req.session.user) {
+        if (req.session.key) {
             res.sendFile(path.join(__dirname + '/views/home.html'))
         } else {
             res.redirect("/login")

@@ -1,19 +1,41 @@
 <html>
+
+<head>
+  <link rel="stylesheet" type="text/css" href="http://localhost:3001/css/login.css" />
+  <script>
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("login-container");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      document.getElementById(tabName).style.display = "block";
+    }
+
+  </script>
+</head>
+<div class="login">
+  <button onClick="openTab(event, 'login')" class="login-header">Log In</button><button
+    onClick="openTab(event, 'signup')" class="login-header">Sign Up</button>
+
+  <div id="login" class="login-container">
     <form action="http://localhost:3001/login" method="POST">
-      
-        <div class="container">
-          <label for="uname"><b>Username</b></label>
-          <input type="text" placeholder="Enter Username" name="username" required>
-      
-          <label for="psw"><b>Password</b></label>
-          <input type="password" placeholder="Enter Password" name="password" required>
-      
-          <button type="submit">Login</button>
-        </div>
-      
-        <div class="container" style="background-color:#f1f1f1">
-          <button type="button" class="cancelbtn">Cancel</button>
-          <span class="psw">Forgot <a href="#">password?</a></span>
-        </div>
-      </form>
+      <p><input type="username" placeholder="Enter Username" name="username" required></p>
+
+      <p><input type="password" placeholder="Enter Password" name="password" required></p>
+
+      <p><input type="submit" value="Log In" /></p>
+    </form>
+  </div>
+  <div id="signup" class="login-container">
+    <form action="http://localhost:3001/create" method="POST">
+      <p><input type="username" placeholder="Create Username" name="username" required></p>
+
+      <p><input type="password" placeholder="Create Password" name="password" required></p>
+
+      <p><input type="submit" value="Create Account" /></p>
+    </form>
+  </div>
+</div>
+
 </html>
